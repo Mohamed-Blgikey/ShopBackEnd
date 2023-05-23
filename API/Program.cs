@@ -2,6 +2,7 @@ using API.Helper;
 using Core.Interfaces;
 using Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
+using StackExchange.Redis;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,8 +21,15 @@ builder.Services.AddDbContext<StoreContext>(opt =>
 builder.Services.AddCors();
 
 builder.Services.AddScoped<IproductRepo, ProductRepo>();
+builder.Services.AddScoped<IBasketRep, BasketRep>();
 builder.Services.AddScoped(typeof(IGenericRepository<>),typeof(GenericRepository<>));
 builder.Services.AddAutoMapper(typeof(MappingProfile));
+
+builder.Services.AddSingleton<IConnectionMultiplexer>(c =>
+{
+    ConfigurationOptions opt = ConfigurationOptions.Parse(builder.Configuration.GetConnectionString("Redis")!);
+    return ConnectionMultiplexer.Connect(opt);
+});
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
