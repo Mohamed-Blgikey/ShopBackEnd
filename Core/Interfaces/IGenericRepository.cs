@@ -3,6 +3,7 @@ using Core.Specification;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -14,6 +15,6 @@ namespace Core.Interfaces
         Task<IReadOnlyList<T>> GetAllAsync();
         Task<T> GetWithSpecAsync(ISpecification<T> specification);
         Task<IReadOnlyList<T>> ListWithSpecAsync(ISpecification<T> specification);
-        Task<int> Count();
+        Task<int> Count(Expression<Func<T,bool>> expression);
     }
 }

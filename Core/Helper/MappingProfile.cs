@@ -1,5 +1,6 @@
 ﻿using API.DTOS;
 using AutoMapper;
+using Core.DTOS.Auth;
 using Core.Entities;
 
 namespace API.Helper

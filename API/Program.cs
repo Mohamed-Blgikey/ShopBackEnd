@@ -1,8 +1,13 @@
 using API.Helper;
 using Core.Interfaces;
 using Infrastructure.Data;
+using Infrastructure.Extend;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using StackExchange.Redis;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,11 +16,64 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(
+    c =>
+    {
+        c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+        {
+            In = ParameterLocation.Header,
+            Description = "please insert token",
+            Name = "Authorization",
+            Type = SecuritySchemeType.Http,
+            BearerFormat = "JWT",
+            Scheme = "bearer"
+        });
+        c.AddSecurityRequirement(new OpenApiSecurityRequirement
+        {
+            {
+                new OpenApiSecurityScheme
+                {
+                    Reference = new OpenApiReference
+                    {
+                        Type= ReferenceType.SecurityScheme,
+                        Id = "Bearer"
+                    }
+                },
+                new string[] {}
+            }
+        });
+    });
 
-builder.Services.AddDbContext<StoreContext>(opt =>
+//injectDatabse
+builder.Services.AddDbContext<StoreContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("def")));
+
+//addIentity
+builder.Services.AddIdentity<AppUser, IdentityRole>()
+    .AddEntityFrameworkStores<StoreContext>()
+    .AddDefaultTokenProviders();
+
+//jwt configration
+builder.Services.Configure<JWT>(builder.Configuration.GetSection("JWT"));
+builder.Services.AddAuthentication(opt =>
 {
-    opt.UseSqlite(builder.Configuration.GetConnectionString("def")!);
+    opt.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    opt.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+
+}).AddJwtBearer(opt =>
+{
+    opt.RequireHttpsMetadata = false;
+    opt.SaveToken = false;
+    opt.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuerSigningKey = true,
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidIssuer = builder.Configuration["JWT:Issuer"],
+        ValidAudience = builder.Configuration["JWT:Audience"],
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JWT:Key"])),
+
+    };
 });
 
 builder.Services.AddCors();
@@ -25,11 +83,14 @@ builder.Services.AddScoped<IBasketRep, BasketRep>();
 builder.Services.AddScoped(typeof(IGenericRepository<>),typeof(GenericRepository<>));
 builder.Services.AddAutoMapper(typeof(MappingProfile));
 
-builder.Services.AddSingleton<IConnectionMultiplexer>(c =>
-{
-    ConfigurationOptions opt = ConfigurationOptions.Parse(builder.Configuration.GetConnectionString("Redis")!);
-    return ConnectionMultiplexer.Connect(opt);
-});
+//builder.Services.AddSingleton<IConnectionMultiplexer>(c =>
+//{
+//    ConfigurationOptions opt = ConfigurationOptions.Parse(builder.Configuration.GetConnectionString("Redis")!);
+//    return ConnectionMultiplexer.Connect(opt);
+//});
+
+//Inject AuthServices
+builder.Services.AddTransient<IAddressRep, AddressRep>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -45,16 +106,5 @@ app.UseAuthorization();
 
 app.MapControllers();
 app.UseCors(a=>a.AllowAnyHeader().SetIsOriginAllowed(a=>true).AllowAnyMethod());
-using var scope = app.Services.CreateScope();
-var services = scope.ServiceProvider;
-var context = services.GetRequiredService<StoreContext>();
-var logger = services.GetRequiredService<ILogger<Program>>();
-try
-{
-    await context.Database.MigrateAsync();
-}
-catch (Exception ex)
-{
-    logger.LogError(ex, "error migration");
-}
+
 app.Run();

@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -19,9 +20,9 @@ namespace Infrastructure.Data
             this.context = context;
         }
 
-        public async Task<int> Count()
+        public async Task<int> Count(Expression<Func<T, bool>> expression)
         {
-            return await context.Set<T>().CountAsync(); 
+            return await context.Set<T>().Where(expression).CountAsync(); 
         }
 
         public async Task<IReadOnlyList<T>> GetAllAsync()

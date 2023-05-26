@@ -21,7 +21,7 @@ namespace API.Controllers
         private readonly IGenericRepository<ProductType> productTypeRepo;
         private readonly IMapper mapper;
 
-        public ProductsController(IGenericRepository<Product> ProductRepo, IGenericRepository<ProductBrand> ProductBrandRepo, IGenericRepository<ProductType> ProductTypeRepo,IMapper mapper)
+        public ProductsController(IGenericRepository<Product> ProductRepo, IGenericRepository<ProductBrand> ProductBrandRepo, IGenericRepository<ProductType> ProductTypeRepo, IMapper mapper)
         {
             productRepo = ProductRepo;
             productBrandRepo = ProductBrandRepo;
@@ -34,8 +34,12 @@ namespace API.Controllers
         {
             ProductWithBrandAndTypeSpec spec = new ProductWithBrandAndTypeSpec(@params);
             IReadOnlyList<Product> data = await productRepo.ListWithSpecAsync(spec);
-            var totalCount = await productRepo.Count();
-            return Ok(new Pagenation<ProductToReturnDto>(@params.PageIndex,@params.PageSize,data.Count,totalCount, mapper.Map<IReadOnlyList<ProductToReturnDto>>(data)));
+            var totalCount = await productRepo.Count(x =>
+                (string.IsNullOrEmpty(@params.Search) || x.Name.ToLower().Contains(@params.Search)) &&
+            (!@params.TypeId.HasValue || x.ProductTypeId == @params.TypeId) &&
+            (!@params.BrandId.HasValue || x.ProductBrandId == @params.BrandId)
+            );
+            return Ok(new Pagenation<ProductToReturnDto>(@params.PageIndex, @params.PageSize, data.Count, totalCount, mapper.Map<IReadOnlyList<ProductToReturnDto>>(data)));
         }
 
         [HttpGet("GetProductBrands")]
