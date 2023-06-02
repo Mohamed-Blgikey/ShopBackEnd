@@ -1,6 +1,6 @@
 ﻿using Core.Entities;
 
-namespace API.Helper
+namespace Core.Helper
 {
     public class Pagenation<T> where T : class
     {

@@ -1,4 +1,5 @@
-﻿using Core.Entities;
+﻿using Core.DTOS.BasketItems;
+using Core.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,8 +10,8 @@ namespace Core.Interfaces
 {
     public interface IBasketRep
     {
-        //Task<CustomerBasket> GetBasketAsync(int basketId);
-        //Task<CustomerBasket> UpdateBasketAsync(CustomerBasket basket);
-        //Task<bool> DeleteBasketAsync(int basketId);
+        Task<IReadOnlyList<BasketToReturnDto>> GetBasketAsync(string userId);
+        Task<BasketToReturnDto> UpdateBasketAsync(BasketToReturnDto basket, string userId);
+        Task<bool> DeleteBasketAsync(string userId);
     }
 }

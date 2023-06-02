@@ -1,7 +1,7 @@
 ﻿using API.DTOS;
-using API.Helper;
 using AutoMapper;
 using Core.Entities;
+using Core.Helper;
 using Core.Interfaces;
 using Core.Specification;
 using Core.Specification.ProductSpec;

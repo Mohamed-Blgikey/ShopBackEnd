@@ -12,5 +12,6 @@ namespace Infrastructure.Extend
     {
         public string DisplayName { get; set; }
         public Address Address { get; set; }
+        public ICollection<BasktItem> BasktItems { get; set; }
     }
 }

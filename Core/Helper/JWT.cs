@@ -1,4 +1,4 @@
-﻿namespace API.Helper
+﻿namespace Core.Helper
 {
     public class JWT
     {

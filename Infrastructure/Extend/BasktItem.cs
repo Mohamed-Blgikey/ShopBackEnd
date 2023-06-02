@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Core.Entities
+namespace Infrastructure.Extend
 {
     public class BasktItem
     {
@@ -15,5 +15,7 @@ namespace Core.Entities
         public string PhotoUrl { get; set; }
         public string Brand { get; set; }
         public string Type { get; set; }
+        public string UserId { get; set; }
+        public AppUser User { get; set; }
     }
 }

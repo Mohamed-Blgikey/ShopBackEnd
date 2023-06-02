@@ -1,11 +1,10 @@
 ﻿using API.Error;
-using API.Helper;
 using AutoMapper;
 using Core.DTOS.Auth;
+using Core.Helper;
 using Core.Interfaces;
 using Infrastructure.Extend;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
