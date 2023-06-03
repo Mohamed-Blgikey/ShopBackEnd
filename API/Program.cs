@@ -80,6 +80,8 @@ builder.Services.AddCors();
 
 builder.Services.AddScoped<IproductRepo, ProductRepo>();
 builder.Services.AddScoped<IBasketRep, BasketRep>();
+builder.Services.AddScoped<IOrderService, OrderService>();
+builder.Services.AddScoped<IUniteOdWork, UniteOdWork>();
 builder.Services.AddScoped(typeof(IGenericRepository<>),typeof(GenericRepository<>));
 builder.Services.AddAutoMapper(typeof(MappingProfile));
 
