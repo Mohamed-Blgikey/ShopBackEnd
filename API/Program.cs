@@ -2,6 +2,7 @@ using Core.Helper;
 using Core.Interfaces;
 using Infrastructure.Data;
 using Infrastructure.Extend;
+using Infrastructure.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -82,6 +83,7 @@ builder.Services.AddScoped<IproductRepo, ProductRepo>();
 builder.Services.AddScoped<IBasketRep, BasketRep>();
 builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<IUniteOdWork, UniteOdWork>();
+builder.Services.AddScoped<IPaymentServices, PaymentServices>();
 builder.Services.AddScoped(typeof(IGenericRepository<>),typeof(GenericRepository<>));
 builder.Services.AddAutoMapper(typeof(MappingProfile));
 

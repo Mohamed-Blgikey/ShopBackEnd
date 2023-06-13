@@ -29,11 +29,12 @@ namespace API.Controllers
         [HttpPost]
         public async Task<ActionResult<Order>> CreateOrder(OrderDto orderDto)
         {
-            var email = User.FindFirst(ClaimTypes.Email)!.Value;
+            var email = User.FindFirst(ClaimTypes.NameIdentifier)!.Value;
 
-            var address = _mapper.Map<OrderAddress>(orderDto.ShipToAddress);
+            var address = new OrderAddress(orderDto.ShipToAddress.FirstName, orderDto.ShipToAddress.LastName, orderDto.ShipToAddress.Street, orderDto.ShipToAddress.City, orderDto.ShipToAddress.State, orderDto.ShipToAddress.ZipCode);
 
-            var order = await _orderService.CreateOrderAsync(email, orderDto.DeliveryMethodId, orderDto.userId, address);
+
+            var order = await _orderService.CreateOrderAsync(email, orderDto.DeliveryMethodId, orderDto.userId,address);
 
             if (order == null) return BadRequest(new ApiResponse(400, "Problem creating order"));
 
@@ -41,21 +42,21 @@ namespace API.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IReadOnlyList<OrderToReturnDto>>> GetOrdersForUser()
+        public async Task<ActionResult<List<Order>>> GetOrdersForUser()
         {
-            var email = User.FindFirst(ClaimTypes.Email)!.Value;
+            var email = User.FindFirst(ClaimTypes.NameIdentifier)!.Value;
 
             var orders = await _orderService.GetOrdersForUserAsync(email);
-            return Ok(_mapper.Map<IReadOnlyList<OrderToReturnDto>>(orders));
+            return Ok(orders);
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<OrderToReturnDto>> GetOrderByIdForUser(int id)
+        public async Task<ActionResult<Order>> GetOrderByIdForUser(int id)
         {
-            var email = User.FindFirst(ClaimTypes.Email)!.Value;
+            var email = User.FindFirst(ClaimTypes.NameIdentifier)!.Value;
             var order = await _orderService.GetOrderByIdAsync(id, email);
             if (order == null) return NotFound(new ApiResponse(404,null));
-            return _mapper.Map<OrderToReturnDto>(order);
+            return order;
         }
 
         [HttpGet("deliveryMethod")]

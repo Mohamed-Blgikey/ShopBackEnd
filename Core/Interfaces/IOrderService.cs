@@ -1,4 +1,5 @@
-﻿using Core.Entities.OrderAggregate;
+﻿using Core.DTOS;
+using Core.Entities.OrderAggregate;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,7 +12,7 @@ namespace Core.Interfaces
     public interface IOrderService
     {
         Task<Order> CreateOrderAsync(string buyerEmail, int deliveryMethodid, string userId, OrderAddress shippingAddress);
-        Task<IReadOnlyList<Order>> GetOrdersForUserAsync(string byuyerEmail);
+        Task<List<Order>> GetOrdersForUserAsync(string byuyerEmail);
         Task<Order> GetOrderByIdAsync(int id, string buyerEmail);
         Task<IReadOnlyList<DeliveryMethod>> GetDeliveryMethodsAsync();
     }

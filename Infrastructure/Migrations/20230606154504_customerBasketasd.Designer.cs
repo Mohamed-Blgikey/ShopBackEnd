@@ -4,6 +4,7 @@ using Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,10 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(StoreContext))]
-    partial class StoreContextModelSnapshot : ModelSnapshot
+    [Migration("20230606154504_customerBasketasd")]
+    partial class customerBasketasd
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -60,9 +62,6 @@ namespace Infrastructure.Migrations
 
                     b.Property<string>("BuyerEmail")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ClientSecret")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("DeliveryMethodId")
@@ -254,6 +253,28 @@ namespace Infrastructure.Migrations
                     b.ToTable("ProductTypes");
                 });
 
+            modelBuilder.Entity("Infrastructure.DTOS.CustomerBasket", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("ClientSecret")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("DeliveryMethodId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("PaymentIntentId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal?>("ShippingPrice")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("CustomerBaskets");
+                });
+
             modelBuilder.Entity("Infrastructure.Extend.Address", b =>
                 {
                     b.Property<int>("Id")
@@ -379,6 +400,9 @@ namespace Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("CustomerBasketId")
+                        .HasColumnType("nvarchar(450)");
+
                     b.Property<string>("PhotoUrl")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -402,6 +426,8 @@ namespace Infrastructure.Migrations
                         .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("CustomerBasketId");
 
                     b.HasIndex("UserId");
 
@@ -607,8 +633,12 @@ namespace Infrastructure.Migrations
 
             modelBuilder.Entity("Infrastructure.Extend.BasktItem", b =>
                 {
+                    b.HasOne("Infrastructure.DTOS.CustomerBasket", null)
+                        .WithMany("Items")
+                        .HasForeignKey("CustomerBasketId");
+
                     b.HasOne("Infrastructure.Extend.AppUser", "User")
-                        .WithMany("BasktItems")
+                        .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -682,12 +712,15 @@ namespace Infrastructure.Migrations
                     b.Navigation("Products");
                 });
 
+            modelBuilder.Entity("Infrastructure.DTOS.CustomerBasket", b =>
+                {
+                    b.Navigation("Items");
+                });
+
             modelBuilder.Entity("Infrastructure.Extend.AppUser", b =>
                 {
                     b.Navigation("Address")
                         .IsRequired();
-
-                    b.Navigation("BasktItems");
                 });
 #pragma warning restore 612, 618
         }

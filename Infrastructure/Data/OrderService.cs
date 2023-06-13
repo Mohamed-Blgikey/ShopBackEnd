@@ -1,7 +1,10 @@
-﻿using Core.Entities;
+﻿using AutoMapper;
+using Core.DTOS;
+using Core.Entities;
 using Core.Entities.OrderAggregate;
 using Core.Interfaces;
 using Core.Specification.OrderWithItemsAndOrderingSpec;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,11 +17,15 @@ namespace Infrastructure.Data
     {
         private readonly IUniteOdWork uniteOdWork;
         private readonly IBasketRep basketRep;
+        private readonly StoreContext context;
+        private readonly IMapper mapper;
 
-        public OrderService(IUniteOdWork uniteOdWork, IBasketRep basketRep)
+        public OrderService(IUniteOdWork uniteOdWork, IBasketRep basketRep,StoreContext context ,IMapper mapper)
         {
             this.uniteOdWork = uniteOdWork;
             this.basketRep = basketRep;
+            this.context = context;
+            this.mapper = mapper;
         }
         public async Task<Order> CreateOrderAsync(string buyerEmail, int deliveryMethodid, string userId, OrderAddress shippingAddress)
         {
@@ -27,9 +34,14 @@ namespace Infrastructure.Data
             var items = new List<OrderItem>();
             foreach (var item in basket)
             {
-                var productItem = await uniteOdWork.repository<Product>().GetByIdAsync(item.Id);
-                var itemOrdered = new ProductItemOrdered(productItem.Id, productItem.Name, productItem.PictureUrl);
-                var orderItem = new OrderItem(itemOrdered, productItem.Price, item.Quantity);
+
+                var itemOrdered = new ProductItemOrdered()
+                {
+                    PictureUrl = item.PhotoUrl,
+                    ProductItemId = item.Id,
+                    ProductName = item.ProductName,
+                };
+                var orderItem = new OrderItem(itemOrdered, item.Price, item.Quantity);
                 items.Add(orderItem);
             }
 
@@ -53,15 +65,16 @@ namespace Infrastructure.Data
         public async Task<Order> GetOrderByIdAsync(int id, string buyerEmail)
         {
             var spec = new OrderWithItemsAndOrderingSpec(id, buyerEmail);
+            var x = await context.Orders.Where(a => a.BuyerEmail == buyerEmail && a.Id == id).Include(a => a.DeliveryMethod).Include(a => a.ShipToAddress).Include(a => a.OrderItems).ThenInclude(a => a.ItemOrdered).FirstOrDefaultAsync();
+            return x;
 
-            return await uniteOdWork.repository<Order>().GetWithSpecAsync(spec);
         }
 
-        public async Task<IReadOnlyList<Order>> GetOrdersForUserAsync(string byuyerEmail)
+        public async Task<List<Order>> GetOrdersForUserAsync(string byuyerEmail)
         {
             var spec = new OrderWithItemsAndOrderingSpec(byuyerEmail);
-
-            return await uniteOdWork.repository<Order>().ListWithSpecAsync(spec);
+            var x = await context.Orders.Where(a => a.BuyerEmail == byuyerEmail).Include(a => a.DeliveryMethod).Include(a => a.ShipToAddress).Include(a => a.OrderItems).ThenInclude(a => a.ItemOrdered).ToListAsync();
+            return x;
         }
     }
 }
